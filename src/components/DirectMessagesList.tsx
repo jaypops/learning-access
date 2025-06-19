@@ -36,11 +36,17 @@ export function DirectMessagesList() {
             }}
           >
             <div className="flex items-center space-x-2 w-full">
-              <img
-                src={friend.avatar || "/placeholder.svg"}
-                alt={friend.username}
-                className="w-6 h-6 rounded-full flex-shrink-0"
-              />
+              {friend.avatar && friend.avatar !== "/placeholder.svg" ? (
+                <img
+                  src={friend.avatar || "/placeholder.svg"}
+                  alt={friend.username}
+                  className="w-6 h-6 rounded-full flex-shrink-0"
+                />
+              ) : (
+                <div className="w-6 h-6 bg-[#5865F2] rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                  {friend.username.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm truncate">{friend.username}</div>
                 {dm.lastMessage && <div className="text-xs text-gray-400 truncate">{dm.lastMessage}</div>}

@@ -15,16 +15,14 @@ import {
   MessageCircleQuestionIcon as QuestionMarkCircle,
   Phone,
   Video,
+  Plus,
+  Smile,
+  MessageSquare,
+  MoreHorizontal,
+  User,
 } from "lucide-react"
 import { useApp } from "../context/AppContext"
-
-interface Message {
-  id: string
-  author: string
-  content: string
-  timestamp: Date
-  avatar: string
-}
+import type { Message } from "../types"
 
 export function ChatArea() {
   const {
@@ -36,6 +34,12 @@ export function ChatArea() {
     friends,
     directMessages,
     setIsVoiceConnected,
+    threads,
+    setSelectedThreadId,
+    showEmojiPicker,
+    setShowEmojiPicker,
+    setSelectedUserId,
+    setCurrentView,
   } = useApp()
 
   const [message, setMessage] = useState("")
@@ -43,21 +47,30 @@ export function ChatArea() {
     {
       id: "1",
       author: "Alice",
+      authorId: "1",
       content: "Hey everyone! How's it going?",
       timestamp: new Date(Date.now() - 3600000),
       avatar: "/placeholder.svg?height=40&width=40",
+      reactions: [
+        { emoji: "👍", count: 3, users: ["1", "2", "3"] },
+        { emoji: "❤️", count: 1, users: ["2"] },
+      ],
     },
     {
       id: "2",
       author: "Bob",
-      content: "Pretty good! Just working on some code.",
+      authorId: "2",
+      content:
+        "Pretty good! Just working on some code. **Check this out:**\n```js\nconst hello = 'world';\nconsole.log(hello);\n```",
       timestamp: new Date(Date.now() - 1800000),
       avatar: "/placeholder.svg?height=40&width=40",
     },
     {
       id: "3",
       author: "Charlie",
-      content: "Same here! Discord is such a great platform for developers.",
+      authorId: "3",
+      content:
+        "Same here! Discord is such a great platform for developers. Anyone want to start a thread about the new features?",
       timestamp: new Date(Date.now() - 900000),
       avatar: "/placeholder.svg?height=40&width=40",
     },
@@ -84,9 +97,21 @@ export function ChatArea() {
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault()
     if (message.trim()) {
-      // Handle sending message
       setMessage("")
     }
+  }
+
+  const handleReaction = (messageId: string, emoji: string) => {
+    console.log(`Reacted to message ${messageId} with ${emoji}`)
+  }
+
+  const handleCreateThread = (messageId: string) => {
+    console.log(`Creating thread for message ${messageId}`)
+  }
+
+  const handleViewProfile = (authorId: string) => {
+    setSelectedUserId(authorId)
+    setCurrentView("profile")
   }
 
   let headerTitle = ""
@@ -94,7 +119,7 @@ export function ChatArea() {
 
   if (currentView === "server" && selectedChannelId) {
     const server = servers.find((s) => s.id === selectedServerId)
-    const channel = server?.channels.find((c) => c.id === selectedChannelId)
+    const channel = server?.categories.flatMap((cat) => cat.channels).find((c) => c.id === selectedChannelId)
     if (channel) {
       headerTitle = channel.name
       headerIcon = channel.type === "text" ? <Hash className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />
@@ -104,21 +129,27 @@ export function ChatArea() {
     const friend = friends.find((f) => dm?.participants.includes(f.id))
     if (friend) {
       headerTitle = friend.username
-      headerIcon = (
-        <div className="w-6 h-6 rounded-full bg-gray-600 flex items-center justify-center text-xs">
-          {friend.username.charAt(0)}
-        </div>
-      )
+      headerIcon =
+        friend.avatar && friend.avatar !== "/placeholder.svg" ? (
+          <img src={friend.avatar || "/placeholder.svg"} alt={friend.username} className="w-6 h-6 rounded-full" />
+        ) : (
+          <div className="w-6 h-6 bg-[#5865F2] rounded-full flex items-center justify-center text-white text-xs font-semibold">
+            {friend.username.charAt(0).toUpperCase()}
+          </div>
+        )
     }
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-800">
+    <div className="flex-1 flex flex-col bg-gray-800 h-full">
       {/* Chat Header */}
       <div className="h-12 px-4 flex items-center justify-between border-b border-gray-700">
         <div className="flex items-center space-x-3">
           {headerIcon}
           <span className="font-semibold">{headerTitle}</span>
+          {currentView === "server" && (
+            <span className="text-sm text-gray-400">— General discussion and announcements</span>
+          )}
         </div>
 
         <div className="flex items-center space-x-2">
@@ -156,8 +187,30 @@ export function ChatArea() {
         </div>
       </div>
 
+      {/* Active Threads */}
+      {threads.length > 0 && currentView === "server" && (
+        <div className="bg-blue-900/10 border-b border-gray-700 p-2">
+          <div className="flex items-center space-x-2 text-sm">
+            <MessageSquare className="w-4 h-4 text-blue-400" />
+            <span className="text-blue-400 font-medium">Active Threads:</span>
+            {threads.slice(0, 3).map((thread) => (
+              <Button
+                key={thread.id}
+                variant="ghost"
+                size="sm"
+                className="text-blue-400 hover:text-blue-300 hover:bg-blue-900/20"
+                onClick={() => setSelectedThreadId(thread.id)}
+              >
+                {thread.name}
+              </Button>
+            ))}
+            {threads.length > 3 && <span className="text-gray-400">+{threads.length - 3} more</span>}
+          </div>
+        </div>
+      )}
+
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {messages.map((msg, index) => {
           const showDate = index === 0 || formatDate(messages[index - 1].timestamp) !== formatDate(msg.timestamp)
 
@@ -169,17 +222,104 @@ export function ChatArea() {
                 </div>
               )}
               <div className="flex space-x-3 hover:bg-gray-700/50 p-2 rounded group">
-                <img
-                  src={msg.avatar || "/placeholder.svg"}
-                  alt={msg.author}
-                  className="w-10 h-10 rounded-full flex-shrink-0"
-                />
+                {msg.avatar && msg.avatar !== "/placeholder.svg?height=40&width=40" ? (
+                  <img
+                    src={msg.avatar || "/placeholder.svg"}
+                    alt={msg.author}
+                    className="w-10 h-10 rounded-full flex-shrink-0 cursor-pointer hover:opacity-80"
+                    onClick={() => handleViewProfile(msg.authorId)}
+                  />
+                ) : (
+                  <div
+                    className="w-10 h-10 bg-[#5865F2] rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0 cursor-pointer hover:opacity-80"
+                    onClick={() => handleViewProfile(msg.authorId)}
+                  >
+                    {msg.author.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1">
                   <div className="flex items-baseline space-x-2">
-                    <span className="font-semibold text-white">{msg.author}</span>
+                    <span
+                      className="font-semibold text-white cursor-pointer hover:underline"
+                      onClick={() => handleViewProfile(msg.authorId)}
+                    >
+                      {msg.author}
+                    </span>
                     <span className="text-xs text-gray-400">{formatTime(msg.timestamp)}</span>
                   </div>
-                  <p className="text-gray-300 mt-1">{msg.content}</p>
+
+                  {/* Message Content with Markdown Support */}
+                  <div className="text-gray-300 mt-1">
+                    {msg.content.includes("```") ? (
+                      <div>
+                        {msg.content.split("```").map((part, i) =>
+                          i % 2 === 0 ? (
+                            <span key={i}>{part}</span>
+                          ) : (
+                            <pre key={i} className="bg-gray-900 p-2 rounded mt-1 mb-1 text-sm overflow-x-auto">
+                              <code>{part}</code>
+                            </pre>
+                          ),
+                        )}
+                      </div>
+                    ) : (
+                      <p>
+                        {msg.content
+                          .split("**")
+                          .map((part, i) => (i % 2 === 0 ? part : <strong key={i}>{part}</strong>))}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Reactions */}
+                  {msg.reactions && msg.reactions.length > 0 && (
+                    <div className="flex items-center space-x-1 mt-2">
+                      {msg.reactions.map((reaction, i) => (
+                        <Button
+                          key={i}
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 bg-gray-700 hover:bg-gray-600 text-xs"
+                          onClick={() => handleReaction(msg.id, reaction.emoji)}
+                        >
+                          {reaction.emoji} {reaction.count}
+                        </Button>
+                      ))}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      >
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Message Actions */}
+                  <div className="flex items-center space-x-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-gray-400 hover:text-white"
+                      onClick={() => handleCreateThread(msg.id)}
+                    >
+                      <MessageSquare className="w-3 h-3 mr-1" />
+                      Thread
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs text-gray-400 hover:text-white"
+                      onClick={() => handleViewProfile(msg.authorId)}
+                    >
+                      <User className="w-3 h-3 mr-1" />
+                      Profile
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-xs text-gray-400 hover:text-white">
+                      <MoreHorizontal className="w-3 h-3" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -187,22 +327,49 @@ export function ChatArea() {
         })}
       </div>
 
+      {/* Emoji Picker */}
+      {showEmojiPicker && (
+        <div className="absolute bottom-20 left-4 bg-gray-700 rounded-lg p-4 shadow-lg z-10">
+          <div className="grid grid-cols-8 gap-2">
+            {["😀", "😂", "😍", "🤔", "👍", "👎", "❤️", "🎉", "😢", "😡", "🔥", "💯"].map((emoji) => (
+              <Button
+                key={emoji}
+                variant="ghost"
+                size="sm"
+                className="text-lg hover:bg-gray-600"
+                onClick={() => {
+                  setShowEmojiPicker(false)
+                }}
+              >
+                {emoji}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Message Input */}
-      <div className="p-4">
+      <div className="p-4 flex-shrink-0 border-t border-gray-700">
         <form onSubmit={handleSendMessage}>
           <div className="relative">
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={`Message ${headerTitle}`}
-              className="bg-gray-700 border-none pr-12 py-3"
+              className="bg-gray-700 border-none pr-20 py-3"
             />
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex space-x-1">
               <Button type="button" variant="ghost" size="icon" className="w-6 h-6 text-gray-400 hover:text-white">
-                <span className="text-lg">+</span>
+                <Plus className="w-4 h-4" />
               </Button>
-              <Button type="button" variant="ghost" size="icon" className="w-6 h-6 text-gray-400 hover:text-white">
-                <span className="text-lg">😀</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="w-6 h-6 text-gray-400 hover:text-white"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              >
+                <Smile className="w-4 h-4" />
               </Button>
             </div>
           </div>

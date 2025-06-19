@@ -3,10 +3,12 @@
 import { Button } from "@/components/ui/button"
 import { Mic, MicOff, Headphones, Settings } from "lucide-react"
 import { useAuth } from "../context/AuthContext"
+import { useApp } from "../context/AppContext"
 import { useState } from "react"
 
 export function UserPanel() {
   const { user, logout } = useAuth()
+  const { setShowSettings } = useApp()
   const [isMuted, setIsMuted] = useState(false)
   const [isDeafened, setIsDeafened] = useState(false)
 
@@ -48,7 +50,7 @@ export function UserPanel() {
           variant="ghost"
           size="icon"
           className="w-8 h-8 text-gray-400 hover:text-white hover:bg-gray-700"
-          onClick={logout}
+          onClick={() => setShowSettings(true)}
         >
           <Settings className="w-4 h-4" />
         </Button>
