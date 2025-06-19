@@ -7,7 +7,7 @@ import { useApp } from "../context/AppContext"
 import { useState } from "react"
 
 export function UserPanel() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const { setShowSettings } = useApp()
   const [isMuted, setIsMuted] = useState(false)
   const [isDeafened, setIsDeafened] = useState(false)

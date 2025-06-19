@@ -6,11 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider"
 import { Palette, Sun, Moon, Monitor, Type, Globe } from "lucide-react"
 import { useApp } from "../../context/AppContext"
-import { useTheme } from "../../context/ThemeContext"
+// import { useTheme } from "../../context/ThemeContext"
 
 export function AppearanceLanguageSettings() {
   const { userSettings, setUserSettings } = useApp()
-  const { theme, toggleTheme } = useTheme()
+  // const { theme, toggleTheme } = useTheme()
 
   const handleSettingChange = (key: keyof typeof userSettings, value: any) => {
     setUserSettings({ ...userSettings, [key]: value })

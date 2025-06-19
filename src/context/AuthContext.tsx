@@ -24,7 +24,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  const login = async (email: string, password: string) => {
+  //passwird removeed
+  const login = async (email: string) => {
     // Mock login
     const mockUser: User = {
       id: "1",
@@ -37,7 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(true)
   }
 
-  const signup = async (username: string, email: string, password: string) => {
+  //password removed
+  const signup = async (username: string, email: string) => {
     // Mock signup
     const mockUser: User = {
       id: "1",
