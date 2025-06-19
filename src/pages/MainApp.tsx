@@ -9,21 +9,25 @@ import { SettingsModal } from "../components/SettingsModal"
 import { useApp } from "../context/AppContext"
 
 export function MainApp() {
-  const { isVoiceConnected, showSettings } = useApp()
+  const { isVoiceConnected, showSettings, currentView, selectedChannelId, selectedDmId } = useApp()
+
+  // Check if we're in a chat view on mobile
+  const isInChat = (currentView === "server" && selectedChannelId) || (currentView === "dm" && selectedDmId)
+  const shouldHideSidebarsOnMobile = isInChat
 
   return (
     <div className="h-screen flex bg-gray-900 text-white overflow-hidden">
-      {/* Server Sidebar - Fixed width */}
-      <div className="flex-shrink-0">
+      {/* Server Sidebar - Hidden on mobile when in chat */}
+      <div className={`flex-shrink-0 ${shouldHideSidebarsOnMobile ? "hidden md:flex" : "flex"}`}>
         <ServerSidebar />
       </div>
 
-      {/* Channel Sidebar - Fixed width, hidden on small screens */}
-      <div className="hidden md:flex flex-shrink-0">
+      {/* Channel Sidebar - Hidden on mobile when in chat */}
+      <div className={`flex-shrink-0 ${shouldHideSidebarsOnMobile ? "hidden md:flex" : "hidden md:flex"}`}>
         <ChannelSidebar />
       </div>
 
-      {/* Main Content Area - Flexible */}
+      {/* Main Content Area - Full width on mobile when in chat */}
       <div className="flex-1 flex flex-col min-w-0 h-full">
         <div className="flex-1 min-h-0">
           <MainContent />
@@ -36,8 +40,8 @@ export function MainApp() {
           </div>
         )}
 
-        {/* User Panel - Fixed height */}
-        <div className="flex-shrink-0">
+        {/* User Panel - Hidden on mobile when in chat */}
+        <div className={`flex-shrink-0 ${shouldHideSidebarsOnMobile ? "hidden md:flex" : "flex"}`}>
           <UserPanel />
         </div>
       </div>

@@ -20,6 +20,8 @@ import {
   MessageSquare,
   MoreHorizontal,
   User,
+  ArrowLeft,
+  Menu,
 } from "lucide-react"
 import { useApp } from "../context/AppContext"
 import type { Message } from "../types"
@@ -40,6 +42,8 @@ export function ChatArea() {
     setShowEmojiPicker,
     setSelectedUserId,
     setCurrentView,
+    setSelectedChannelId,
+    setSelectedDmId,
   } = useApp()
 
   const [message, setMessage] = useState("")
@@ -114,6 +118,15 @@ export function ChatArea() {
     setCurrentView("profile")
   }
 
+  const handleBackToChannels = () => {
+    if (currentView === "server") {
+      setSelectedChannelId(null)
+    } else if (currentView === "dm") {
+      setSelectedDmId(null)
+      setCurrentView("friends")
+    }
+  }
+
   let headerTitle = ""
   let headerIcon = null
 
@@ -145,10 +158,20 @@ export function ChatArea() {
       {/* Chat Header */}
       <div className="h-12 px-4 flex items-center justify-between border-b border-gray-700">
         <div className="flex items-center space-x-3">
+          {/* Mobile Back Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden text-gray-400 hover:text-white"
+            onClick={handleBackToChannels}
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+
           {headerIcon}
-          <span className="font-semibold">{headerTitle}</span>
+          <span className="font-semibold truncate">{headerTitle}</span>
           {currentView === "server" && (
-            <span className="text-sm text-gray-400">— General discussion and announcements</span>
+            <span className="text-sm text-gray-400 hidden sm:inline">— General discussion and announcements</span>
           )}
         </div>
 
@@ -168,21 +191,26 @@ export function ChatArea() {
               </Button>
             </>
           )}
-          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hidden sm:flex">
             <Pin className="w-5 h-5" />
           </Button>
           <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
             <Users className="w-5 h-5" />
           </Button>
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <Input placeholder="Search" className="w-36 h-6 bg-gray-900 border-none text-sm" />
             <Search className="absolute right-2 top-1 w-4 h-4 text-gray-400" />
           </div>
-          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hidden sm:flex">
             <Inbox className="w-5 h-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+          <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white hidden sm:flex">
             <QuestionMarkCircle className="w-5 h-5" />
+          </Button>
+
+          {/* Mobile Menu Button */}
+          <Button variant="ghost" size="icon" className="md:hidden text-gray-400 hover:text-white">
+            <Menu className="w-5 h-5" />
           </Button>
         </div>
       </div>
@@ -237,19 +265,19 @@ export function ChatArea() {
                     {msg.author.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-baseline space-x-2">
                     <span
-                      className="font-semibold text-white cursor-pointer hover:underline"
+                      className="font-semibold text-white cursor-pointer hover:underline truncate"
                       onClick={() => handleViewProfile(msg.authorId)}
                     >
                       {msg.author}
                     </span>
-                    <span className="text-xs text-gray-400">{formatTime(msg.timestamp)}</span>
+                    <span className="text-xs text-gray-400 flex-shrink-0">{formatTime(msg.timestamp)}</span>
                   </div>
 
                   {/* Message Content with Markdown Support */}
-                  <div className="text-gray-300 mt-1">
+                  <div className="text-gray-300 mt-1 break-words">
                     {msg.content.includes("```") ? (
                       <div>
                         {msg.content.split("```").map((part, i) =>
@@ -273,7 +301,7 @@ export function ChatArea() {
 
                   {/* Reactions */}
                   {msg.reactions && msg.reactions.length > 0 && (
-                    <div className="flex items-center space-x-1 mt-2">
+                    <div className="flex items-center space-x-1 mt-2 flex-wrap">
                       {msg.reactions.map((reaction, i) => (
                         <Button
                           key={i}
@@ -305,7 +333,7 @@ export function ChatArea() {
                       onClick={() => handleCreateThread(msg.id)}
                     >
                       <MessageSquare className="w-3 h-3 mr-1" />
-                      Thread
+                      <span className="hidden sm:inline">Thread</span>
                     </Button>
                     <Button
                       variant="ghost"
@@ -314,7 +342,7 @@ export function ChatArea() {
                       onClick={() => handleViewProfile(msg.authorId)}
                     >
                       <User className="w-3 h-3 mr-1" />
-                      Profile
+                      <span className="hidden sm:inline">Profile</span>
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs text-gray-400 hover:text-white">
                       <MoreHorizontal className="w-3 h-3" />
@@ -329,8 +357,8 @@ export function ChatArea() {
 
       {/* Emoji Picker */}
       {showEmojiPicker && (
-        <div className="absolute bottom-20 left-4 bg-gray-700 rounded-lg p-4 shadow-lg z-10">
-          <div className="grid grid-cols-8 gap-2">
+        <div className="absolute bottom-20 left-4 right-4 sm:left-4 sm:right-auto bg-gray-700 rounded-lg p-4 shadow-lg z-10">
+          <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
             {["😀", "😂", "😍", "🤔", "👍", "👎", "❤️", "🎉", "😢", "😡", "🔥", "💯"].map((emoji) => (
               <Button
                 key={emoji}
