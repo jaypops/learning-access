@@ -102,6 +102,7 @@ export interface Server {
   members: ServerMember[]
   memberCount: number
   createdAt: Date
+  unreadCount?: number
 }
 
 export interface Category {
@@ -145,6 +146,8 @@ export interface Friend {
   discriminator: string
   status: "online" | "offline" | "away" | "dnd"
   avatar?: string
+  bio?: string
+  joinedAt?: Date
 }
 
 export interface DirectMessage {
@@ -162,9 +165,12 @@ export interface Message {
   timestamp: Date
   avatar: string
   reactions?: Reaction[]
+  userBadges?: string[]
   attachments?: Attachment[]
   threadId?: string
   parentMessageId?: string
+  isDeleted?: boolean
+  isOwner?: boolean
 }
 
 export interface Reaction {

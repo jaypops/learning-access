@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Hash,
   Volume2,
@@ -12,6 +13,7 @@ import {
   Users,
   MessageSquare,
   ImageIcon,
+  Lock,
 } from "lucide-react"
 import { useApp } from "../context/AppContext"
 import { DirectMessagesList } from "./DirectMessagesList"
@@ -32,7 +34,17 @@ export function ChannelSidebar() {
     setCollapsedCategories(newCollapsed)
   }
 
-  const getChannelIcon = (type: string) => {
+  const getChannelIcon = (type: string, name: string) => {
+    // Custom icons based on channel name
+    if (name.includes("giveaway")) return "🎁"
+    if (name.includes("birthday")) return "🎂"
+    if (name.includes("news") || name.includes("updates")) return "🔧"
+    if (name.includes("suggestion")) return "💡"
+    if (name.includes("gallery")) return "🖼️"
+    if (name.includes("bug")) return "🐛"
+    if (name.includes("lobby")) return "🎁"
+
+    // Default icons by type
     switch (type) {
       case "text":
         return <Hash className="w-4 h-4" />
@@ -74,26 +86,11 @@ export function ChannelSidebar() {
 
   return (
     <div className="w-60 bg-gray-700 flex flex-col h-full">
-      {/* Server Header */}
+      {/* Server Header with Dropdown */}
       <div className="h-12 px-4 flex items-center justify-between border-b border-gray-600 hover:bg-gray-600 cursor-pointer group flex-shrink-0">
         <span className="font-semibold truncate">{currentServer.name}</span>
         <div className="flex items-center space-x-1 flex-shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-4 h-4 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100"
-          >
-            <Settings className="w-3 h-3" />
-          </Button>
-          <ChevronDown className="w-4 h-4" />
-        </div>
-      </div>
-
-      {/* Boost Server Banner */}
-      <div className="p-2 flex-shrink-0">
-        <div className="bg-gradient-to-r from-pink-500 to-purple-600 rounded p-2 text-xs cursor-pointer hover:from-pink-600 hover:to-purple-700 transition-colors">
-          <div className="font-semibold">Boost this server!</div>
-          <div className="text-gray-200">2 boosts away from Level 1!</div>
+          <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-white" />
         </div>
       </div>
 
@@ -103,7 +100,7 @@ export function ChannelSidebar() {
           const isCollapsed = collapsedCategories.has(category.id)
 
           return (
-            <div key={category.id} className="mb-2">
+            <div key={category.id} className="mb-4">
               {/* Category Header */}
               <div
                 className="flex items-center justify-between px-2 py-1 cursor-pointer hover:text-white group"
@@ -131,36 +128,53 @@ export function ChannelSidebar() {
 
               {/* Channels */}
               {!isCollapsed && (
-                <div className="space-y-1 ml-2">
-                  {category.channels.map((channel) => (
-                    <Button
-                      key={channel.id}
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start text-gray-300 hover:text-white hover:bg-gray-600 px-2 py-1 h-8 group",
-                        selectedChannelId === channel.id && "bg-gray-600 text-white",
-                      )}
-                      onClick={() => setSelectedChannelId(channel.id)}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center space-x-2">
-                          {getChannelIcon(channel.type)}
-                          <span className="truncate">{channel.name}</span>
-                          {channel.nsfw && <span className="text-xs bg-red-600 px-1 rounded">NSFW</span>}
+                <div className="space-y-0.5 ml-2">
+                  {category.channels.map((channel) => {
+                    const channelIcon = getChannelIcon(channel.type, channel.name)
+                    const isRestricted = channel.name.includes("voice-chat") || Math.random() > 0.7 // Some channels are restricted
+                    const unreadCount = Math.random() > 0.8 ? Math.floor(Math.random() * 10) + 1 : 0
+
+                    return (
+                      <Button
+                        key={channel.id}
+                        variant="ghost"
+                        className={cn(
+                          "w-full justify-start text-gray-300 hover:text-white hover:bg-gray-600 px-2 py-1 h-8 group relative",
+                          selectedChannelId === channel.id && "bg-gray-600 text-white",
+                        )}
+                        onClick={() => setSelectedChannelId(channel.id)}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center space-x-2 min-w-0">
+                            {typeof channelIcon === "string" ? (
+                              <span className="text-sm">{channelIcon}</span>
+                            ) : (
+                              channelIcon
+                            )}
+                            {isRestricted && <Lock className="w-3 h-3 text-gray-500" />}
+                            <span className="truncate text-sm">{channel.name}</span>
+                          </div>
+                          <div className="flex items-center space-x-1 flex-shrink-0">
+                            {unreadCount > 0 && (
+                              <Badge variant="destructive" className="text-xs px-1.5 py-0.5 h-4 min-w-[16px]">
+                                {unreadCount}
+                              </Badge>
+                            )}
+                            <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">
+                              {channel.type === "text" && (
+                                <Button variant="ghost" size="icon" className="w-4 h-4 text-gray-400 hover:text-white">
+                                  <Users className="w-3 h-3" />
+                                </Button>
+                              )}
+                              <Button variant="ghost" size="icon" className="w-4 h-4 text-gray-400 hover:text-white">
+                                <Settings className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">
-                          {channel.type === "text" && (
-                            <Button variant="ghost" size="icon" className="w-4 h-4 text-gray-400 hover:text-white">
-                              <Users className="w-3 h-3" />
-                            </Button>
-                          )}
-                          <Button variant="ghost" size="icon" className="w-4 h-4 text-gray-400 hover:text-white">
-                            <Settings className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                    </Button>
-                  ))}
+                      </Button>
+                    )
+                  })}
                 </div>
               )}
             </div>
@@ -170,19 +184,20 @@ export function ChannelSidebar() {
 
       {/* Voice Status - Fixed at bottom */}
       <div className="border-t border-gray-600 p-2 flex-shrink-0">
-        <div className="text-xs text-gray-400 mb-2">VOICE CHANNELS</div>
+        <div className="text-xs text-gray-400 mb-2 uppercase tracking-wide font-semibold">Voice Channels</div>
         {currentServer.members
           .filter((member) => member.voiceChannelId)
+          .slice(0, 3)
           .map((member) => {
             const voiceChannel = currentServer.categories
               .flatMap((cat) => cat.channels)
               .find((ch) => ch.id === member.voiceChannelId)
 
             return (
-              <div key={member.id} className="flex items-center space-x-2 px-2 py-1 text-sm">
-                <div className="w-2 h-2 bg-green-500 rounded-full" />
+              <div key={member.id} className="flex items-center space-x-2 px-2 py-1 text-sm hover:bg-gray-600 rounded">
+                <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
                 <span className="text-gray-300 truncate">{member.username}</span>
-                <span className="text-gray-500 truncate">in {voiceChannel?.name}</span>
+                <span className="text-gray-500 truncate text-xs">in {voiceChannel?.name}</span>
               </div>
             )
           })}

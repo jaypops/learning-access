@@ -2,237 +2,220 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
-import { Eye, EyeOff, Edit, Shield, Smartphone, Mail, User } from "lucide-react"
+import { MoreHorizontal } from "lucide-react"
 import { useApp } from "../../context/AppContext"
 
 export function MyAccountSettings() {
-  const { userSettings, setUserSettings } = useApp()
-  const [showPassword, setShowPassword] = useState(false)
-  const [isEditing, setIsEditing] = useState({
-    username: false,
-    email: false,
-    phone: false,
-  })
-
-  const handleSettingChange = (key: keyof typeof userSettings, value: any) => {
-    setUserSettings({ ...userSettings, [key]: value })
-  }
+  //setUserSettings was removed
+  const { userSettings } = useApp()
+  const [activeTab, setActiveTab] = useState("security")
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 h-full overflow-y-auto scroll-container">
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold mb-2">My Account</h2>
-        <p className="text-gray-400">Manage your account settings and security preferences.</p>
+    <div className="max-w-[740px] mx-auto p-[40px]">
+      {/* Tab Navigation */}
+      <div className="flex space-x-[32px] mb-[20px] border-b border-[#1e1f22]">
+        <button
+          onClick={() => setActiveTab("security")}
+          className={`pb-[16px] text-[16px] font-medium border-b-2 transition-colors ${
+            activeTab === "security"
+              ? "text-[#00a8fc] border-[#00a8fc]"
+              : "text-[#b5bac1] border-transparent hover:text-[#dbdee1]"
+          }`}
+        >
+          Security
+        </button>
+        <button
+          onClick={() => setActiveTab("standing")}
+          className={`pb-[16px] text-[16px] font-medium border-b-2 transition-colors ${
+            activeTab === "standing"
+              ? "text-[#00a8fc] border-[#00a8fc]"
+              : "text-[#b5bac1] border-transparent hover:text-[#dbdee1]"
+          }`}
+        >
+          Standing
+        </button>
       </div>
 
-      {/* Account Information */}
-      <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <User className="w-5 h-5" />
-            <span>Account Information</span>
-          </CardTitle>
-          <CardDescription>Update your account details and personal information.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Username */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Username</label>
-            <div className="flex items-center space-x-2">
-              {isEditing.username ? (
-                <>
-                  <Input
-                    value={userSettings.username}
-                    onChange={(e) => handleSettingChange("username", e.target.value)}
-                    className="bg-gray-800 border-gray-600"
-                  />
-                  <Button size="sm" onClick={() => setIsEditing({ ...isEditing, username: false })}>
-                    Save
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setIsEditing({ ...isEditing, username: false })}>
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="flex-1 p-2 bg-gray-800 rounded border border-gray-600">{userSettings.username}</div>
-                  <Button size="sm" variant="outline" onClick={() => setIsEditing({ ...isEditing, username: true })}>
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Email */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Email</label>
-            <div className="flex items-center space-x-2">
-              {isEditing.email ? (
-                <>
-                  <Input
-                    type="email"
-                    value={userSettings.email}
-                    onChange={(e) => handleSettingChange("email", e.target.value)}
-                    className="bg-gray-800 border-gray-600"
-                  />
-                  <Button size="sm" onClick={() => setIsEditing({ ...isEditing, email: false })}>
-                    Save
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setIsEditing({ ...isEditing, email: false })}>
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="flex-1 p-2 bg-gray-800 rounded border border-gray-600 flex items-center space-x-2">
-                    <Mail className="w-4 h-4 text-gray-400" />
-                    <span>{userSettings.email}</span>
+      {activeTab === "security" && (
+        <div className="space-y-[20px]">
+          {/* Profile Card */}
+          <div className="bg-[#5865f2] rounded-[8px] p-[16px] relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#5865f2] to-[#3c45a5] opacity-90" />
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center space-x-[16px]">
+                <div className="relative">
+                  <div className="w-[80px] h-[80px] rounded-full bg-[#313338] flex items-center justify-center text-[32px] font-bold text-white">
+                    {userSettings.username.charAt(0).toUpperCase()}
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => setIsEditing({ ...isEditing, email: true })}>
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Phone Number */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Phone Number</label>
-            <div className="flex items-center space-x-2">
-              {isEditing.phone ? (
-                <>
-                  <Input
-                    type="tel"
-                    value={userSettings.phoneNumber || ""}
-                    onChange={(e) => handleSettingChange("phoneNumber", e.target.value)}
-                    className="bg-gray-800 border-gray-600"
-                    placeholder="+1 (555) 123-4567"
-                  />
-                  <Button size="sm" onClick={() => setIsEditing({ ...isEditing, phone: false })}>
-                    Save
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setIsEditing({ ...isEditing, phone: false })}>
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="flex-1 p-2 bg-gray-800 rounded border border-gray-600 flex items-center space-x-2">
-                    <Smartphone className="w-4 h-4 text-gray-400" />
-                    <span>{userSettings.phoneNumber || "Not set"}</span>
+                  <div className="absolute -bottom-[2px] -right-[2px] w-[24px] h-[24px] bg-[#23a55a] rounded-full border-[4px] border-[#5865f2]" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-[8px]">
+                    <span className="text-[20px] font-semibold text-white">{userSettings.username}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-white/80 hover:text-white hover:bg-white/10 w-6 h-6"
+                    >
+                      <MoreHorizontal className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => setIsEditing({ ...isEditing, phone: true })}>
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </>
-              )}
+                </div>
+              </div>
+              <Button className="bg-white text-[#5865f2] hover:bg-gray-100 font-medium">Edit User Profile</Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Password & Authentication */}
-      <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Shield className="w-5 h-5" />
-            <span>Password & Authentication</span>
-          </CardTitle>
-          <CardDescription>Manage your password and two-factor authentication settings.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Current Password */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Current Password</label>
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter current password"
-                className="bg-gray-800 border-gray-600 pr-10"
-              />
+          {/* Account Information */}
+          <div className="space-y-[20px]">
+            {/* Display Name */}
+            <div className="flex items-center justify-between py-[16px] border-b border-[#1e1f22]">
+              <div>
+                <div className="text-[14px] font-medium text-[#f2f3f5] mb-[4px]">Display Name</div>
+                <div className="text-[16px] text-[#b5bac1]">{userSettings.username}</div>
+              </div>
               <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 w-6 h-6"
-                onClick={() => setShowPassword(!showPassword)}
+                variant="outline"
+                size="sm"
+                className="bg-[#4e5058] border-[#6d6f78] text-[#f2f3f5] hover:bg-[#5c5e66] h-[32px] px-[16px]"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                Edit
               </Button>
             </div>
-          </div>
 
-          {/* New Password */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">New Password</label>
-            <Input type="password" placeholder="Enter new password" className="bg-gray-800 border-gray-600" />
-          </div>
-
-          {/* Confirm Password */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Confirm New Password</label>
-            <Input type="password" placeholder="Confirm new password" className="bg-gray-800 border-gray-600" />
-          </div>
-
-          <Button className="bg-[#5865F2] hover:bg-[#4752C4]">Change Password</Button>
-
-          {/* Two-Factor Authentication */}
-          <div className="pt-4 border-t border-gray-700">
-            <div className="flex items-center justify-between">
+            {/* Username */}
+            <div className="flex items-center justify-between py-[16px] border-b border-[#1e1f22]">
               <div>
-                <h4 className="font-medium">Two-Factor Authentication</h4>
-                <p className="text-sm text-gray-400">Add an extra layer of security to your account</p>
+                <div className="text-[14px] font-medium text-[#f2f3f5] mb-[4px]">Username</div>
+                <div className="text-[16px] text-[#b5bac1]">{userSettings.username}</div>
               </div>
-              <div className="flex items-center space-x-2">
-                {userSettings.twoFactorEnabled && (
-                  <Badge variant="secondary" className="bg-green-900 text-green-300">
-                    Enabled
-                  </Badge>
-                )}
-                <Switch
-                  checked={userSettings.twoFactorEnabled}
-                  onCheckedChange={(checked) => handleSettingChange("twoFactorEnabled", checked)}
-                />
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-[#4e5058] border-[#6d6f78] text-[#f2f3f5] hover:bg-[#5c5e66] h-[32px] px-[16px]"
+              >
+                Edit
+              </Button>
+            </div>
+
+            {/* Email */}
+            <div className="flex items-center justify-between py-[16px] border-b border-[#1e1f22]">
+              <div>
+                <div className="text-[14px] font-medium text-[#f2f3f5] mb-[4px]">Email</div>
+                <div className="text-[16px] text-[#b5bac1] flex items-center space-x-[8px]">
+                  <span>••••••••••••@gmail.com</span>
+                  <button className="text-[#00a8fc] text-[14px] font-medium hover:underline">Reveal</button>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-[#4e5058] border-[#6d6f78] text-[#f2f3f5] hover:bg-[#5c5e66] h-[32px] px-[16px]"
+              >
+                Edit
+              </Button>
+            </div>
+
+            {/* Phone Number */}
+            <div className="flex items-center justify-between py-[16px] border-b border-[#1e1f22]">
+              <div>
+                <div className="text-[14px] font-medium text-[#f2f3f5] mb-[4px]">Phone Number</div>
+                <div className="text-[16px] text-[#b5bac1] flex items-center space-x-[8px]">
+                  <span>••••••••••5469</span>
+                  <button className="text-[#00a8fc] text-[14px] font-medium hover:underline">Reveal</button>
+                </div>
+              </div>
+              <div className="flex items-center space-x-[8px]">
+                <button className="text-[#f23f42] text-[14px] font-medium hover:underline">Remove</button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-[#4e5058] border-[#6d6f78] text-[#f2f3f5] hover:bg-[#5c5e66] h-[32px] px-[16px]"
+                >
+                  Edit
+                </Button>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Account Actions */}
-      <Card className="bg-gray-900/80 backdrop-blur-sm border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-red-400">Danger Zone</CardTitle>
-          <CardDescription>Irreversible and destructive actions for your account.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-red-900/20 border border-red-800 rounded">
-            <div>
-              <h4 className="font-medium text-red-400">Delete Account</h4>
-              <p className="text-sm text-gray-400">Permanently delete your account and all associated data</p>
-            </div>
-            <Button variant="destructive" size="sm">
-              Delete Account
-            </Button>
-          </div>
+          {/* Password and Authentication Section */}
+          <div className="mt-[40px]">
+            <h2 className="text-[20px] font-semibold text-[#f2f3f5] mb-[20px]">Password and Authentication</h2>
 
-          <div className="flex items-center justify-between p-4 bg-yellow-900/20 border border-yellow-800 rounded">
-            <div>
-              <h4 className="font-medium text-yellow-400">Disable Account</h4>
-              <p className="text-sm text-gray-400">Temporarily disable your account (can be reactivated)</p>
+            {/* Multi-Factor Authentication Status */}
+            <div className="flex items-center space-x-[8px] mb-[16px]">
+              <div className="w-[16px] h-[16px] bg-[#23a55a] rounded-full flex items-center justify-center">
+                <svg className="w-[10px] h-[10px] text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <span className="text-[16px] font-medium text-[#23a55a]">Multi-Factor Authentication Enabled</span>
             </div>
-            <Button variant="outline" size="sm" className="border-yellow-600 text-yellow-400">
-              Disable Account
-            </Button>
+
+            <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white mb-[32px]">Change Password</Button>
+
+            {/* Authenticator App */}
+            <div className="mb-[32px]">
+              <h3 className="text-[16px] font-semibold text-[#f2f3f5] mb-[8px]">Authenticator App</h3>
+              <p className="text-[14px] text-[#b5bac1] mb-[16px] leading-[20px]">
+                Configuring an authenticator app is a good way to add an extra layer of security to your Discord account
+                to make sure that only you have the ability to log in.
+              </p>
+              <div className="flex items-center space-x-[12px]">
+                <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">View Backup Codes</Button>
+                <Button
+                  variant="outline"
+                  className="border-[#f23f42] text-[#f23f42] hover:bg-[#f23f42] hover:text-white"
+                >
+                  Remove Authenticator App
+                </Button>
+              </div>
+            </div>
+
+            {/* SMS Backup Authentication */}
+            <div className="mb-[32px]">
+              <h3 className="text-[16px] font-semibold text-[#f2f3f5] mb-[8px]">SMS Backup Authentication</h3>
+              <p className="text-[14px] text-[#b5bac1] mb-[8px] leading-[20px]">
+                Add your phone as a backup MFA method in case you lose access to your authenticator app or backup codes.
+              </p>
+              <div className="text-[14px] text-[#b5bac1] mb-[16px]">
+                Your current phone number is: <span className="text-[#f2f3f5]">••••••••••5469</span>{" "}
+                <button className="text-[#00a8fc] hover:underline">Reveal</button>
+              </div>
+              <Button variant="outline" className="border-[#f23f42] text-[#f23f42] hover:bg-[#f23f42] hover:text-white">
+                Remove SMS Authentication
+              </Button>
+            </div>
+
+            {/* Security Keys */}
+            <div className="mb-[32px]">
+              <h3 className="text-[16px] font-semibold text-[#f2f3f5] mb-[8px]">Security Keys</h3>
+              <p className="text-[14px] text-[#b5bac1] mb-[16px] leading-[20px]">
+                Add an additional layer of protection to your account with a Security Key.
+              </p>
+              <Button className="bg-[#5865f2] hover:bg-[#4752c4] text-white">Register a Security Key</Button>
+            </div>
+
+            {/* Account Removal */}
+            <div className="pt-[20px] border-t border-[#1e1f22]">
+              <h3 className="text-[16px] font-semibold text-[#f2f3f5] mb-[8px]">Account Removal</h3>
+              <p className="text-[14px] text-[#b5bac1] leading-[20px]">
+                Disabling your account means you can recover it at any time after taking this action.
+              </p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
+
+      {activeTab === "standing" && (
+        <div className="text-center py-[40px]">
+          <div className="text-[#b5bac1] text-[16px]">Standing information would go here</div>
+        </div>
+      )}
     </div>
   )
 }
